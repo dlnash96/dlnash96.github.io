@@ -1,4 +1,5 @@
 var $cont = document.querySelector('.cont');
+console.log($cont);
 var $elsArr = [].slice.call(document.querySelectorAll('.el'));
 var $closeBtnsArr = [].slice.call(document.querySelectorAll('.el__close-btn'));
 
