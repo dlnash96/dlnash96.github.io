@@ -379,7 +379,7 @@ body {
 }
 .el:nth-child(4) .el__bg:before {
   transition-delay: 0.3s;
-  background-image: url("Assets/jose-duarte-yfQRbv7oYCg-unsplash.jpg");
+  background-image: url("Assets/Resume_19_8.pdf");
 }
 .el:nth-child(5) {
   -webkit-transform: translate3d(420.8333333333%, 0, 0);
