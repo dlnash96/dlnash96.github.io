@@ -379,7 +379,7 @@ body {
 }
 .el:nth-child(4) .el__bg:before {
   transition-delay: 0.3s;
-  background-image: url("Assets/Resume_19_8.pdf");
+  background-image: url("Assets/Resume_19_8-1.png");
 }
 .el:nth-child(5) {
   -webkit-transform: translate3d(420.8333333333%, 0, 0);
