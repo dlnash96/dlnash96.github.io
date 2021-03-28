@@ -36,7 +36,7 @@ function init() {
   //console.log(window.location.pathname);
   loader.setTranscoderPath( './src/tools/basis/' );
   loader.detectSupport( renderer );
-  loader.load( '../resources/canestra_di_frutta_caravaggio.basis', function ( texture ) {
+  loader.load( '../resources/painting1.basis', function ( texture ) {
 
     texture.encoding = THREE.sRGBEncoding;
     material.map = texture;
