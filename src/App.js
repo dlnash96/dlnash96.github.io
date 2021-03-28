@@ -1,68 +1,87 @@
-import React, { Suspense } from "react";
-import { Canvas } from "react-three-fiber";
-import { DoubleSide, RepeatWrapping, sRGBEncoding } from "three";
-import {
-  Loader,
-  OrbitControls,
-  PerspectiveCamera,
-  useTexture
-} from "@react-three/drei";
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.module.js'
+import { BasisTextureLoader } from './tools/BasisTextureLoader.js';
+import { OrbitControls } from './tools/OrbitControls.js';
 
-import { vertexShader, fragmentShader } from "./shaders";
+let camera, scene, renderer;
+let mesh;
 
-import "./style.css";
+init();
+render();
 
-export default function App() {
-  return (
-    <div style={{ height: "100vh", width: "100vw" }}>
-      <Canvas>
-        <Suspense fallback={null}>
-          <group>
-            <Terrain />
-          </group>
-          <ambientLight />
-        </Suspense>
-        <PerspectiveCamera
-          position={[0.5, 0.5, 0.5]}
-          near={0.01}
-          far={1000}
-          makeDefault
-        />
-        <OrbitControls screenSpacePanning={false} />
-      </Canvas>
-      <Loader />
-    </div>
-  );
+function init() {
+
+  renderer = new THREE.WebGLRenderer( { antialias: true } );
+  renderer.setPixelRatio( window.devicePixelRatio );
+  renderer.setSize( window.innerWidth, window.innerHeight );
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  document.body.appendChild( renderer.domElement );
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
+  camera.position.set( 0, 0, 1 );
+  camera.lookAt( scene.position );
+
+  const controls = new OrbitControls( camera, renderer.domElement );
+  controls.addEventListener( 'change', render );
+
+  const geometry = flipY( new THREE.PlaneBufferGeometry() );
+  const material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
+
+  mesh = new THREE.Mesh( geometry, material );
+
+  scene.add( mesh );
+
+  const loader = new BasisTextureLoader();
+  //console.log(window.location.pathname);
+  loader.setTranscoderPath( './src/tools/basis/' );
+  loader.detectSupport( renderer );
+  loader.load( '../resources/canestra_di_frutta_caravaggio.basis', function ( texture ) {
+
+    texture.encoding = THREE.sRGBEncoding;
+    material.map = texture;
+    material.needsUpdate = true;
+
+    render();
+
+  }, undefined, function ( error ) {
+
+    console.error( error );
+
+  } );
+
+  window.addEventListener( 'resize', onWindowResize );
+
 }
 
-function Terrain() {
-  // Load the heightmap image
-  const heightMap = useTexture("/uluru-heightmap.png");
-  // Apply some properties to ensure it renders correctly
-  heightMap.encoding = sRGBEncoding;
-  heightMap.wrapS = RepeatWrapping;
-  heightMap.wrapT = RepeatWrapping;
-  heightMap.anisotropy = 16;
+function onWindowResize() {
 
-  return (
-    <mesh
-      position={[0, 0, 0]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      scale={[1 / 1024, 1 / 1024, 1 / 1024]}
-    >
-      <planeBufferGeometry args={[1024, 1024, 256, 256]} />
-      <shaderMaterial
-        uniforms={{
-          // Feed the heightmap
-          bumpTexture: { value: heightMap },
-          // Feed the scaling constant for the heightmap
-          bumpScale: { value: 50 }
-        }}
-        // Feed the shaders as strings
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        side={DoubleSide}
-      />
-    </mesh>
-  );
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+  render();
+
+}
+
+function render() {
+
+  renderer.render( scene, camera );
+
+}
+
+/** Correct UVs to be compatible with `flipY=false` textures. */
+function flipY( geometry ) {
+
+  const uv = geometry.attributes.uv;
+
+  for ( let i = 0; i < uv.count; i ++ ) {
+
+    uv.setY( i, 1 - uv.getY( i ) );
+
+  }
+
+  return geometry;
+
 }
